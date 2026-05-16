@@ -42,7 +42,7 @@ mkdir -p "$PROJECT_DIR/.bob"
 
 for sub in rules rules-code rules-plan commands context; do
   mkdir -p "$PROJECT_DIR/.bob/$sub"
-  for f in "$REPO_ROOT/bob/$sub"/*.md; do
+  for f in "$REPO_ROOT/.bob/$sub"/*.md; do
     [[ -e "$f" ]] || continue
     target="$PROJECT_DIR/.bob/$sub/$(basename "$f")"
     if [[ -e "$target" ]]; then

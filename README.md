@@ -35,7 +35,7 @@ ultimate-ai-engineer-bob/
 ├── home/                              # → installed to ~/.bob/
 │   ├── custom_modes.yaml              # 5 personas
 │   └── audit.log                      # populated by wrapper
-├── bob/                               # → installed to <project>/.bob/
+├── .bob/                              # → installed to <project>/.bob/
 │   ├── rules/                         # always-loaded
 │   │   ├── 01-tdd.md
 │   │   ├── 02-systematic-debugging.md
