@@ -32,7 +32,7 @@ ultimate-ai-engineer-bob/
 ├── LICENSE
 ├── AGENTS.md                          # project context with @imports
 ├── .bobrules                          # single-file fallback
-├── home/                              # → installed to ~/.bob/
+├── templates/user/                    # → installed to ~/.bob/ (user-level)
 │   ├── custom_modes.yaml              # 5 personas
 │   └── audit.log                      # populated by wrapper
 ├── .bob/                              # → installed to <project>/.bob/

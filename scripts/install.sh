@@ -32,10 +32,10 @@ if [[ -f "$HOME/.bob/custom_modes.yaml" ]]; then
   cp "$HOME/.bob/custom_modes.yaml" "$HOME/.bob/custom_modes.yaml.bak.$ts"
   echo "==> Backed up existing custom_modes.yaml → custom_modes.yaml.bak.$ts"
 fi
-cp "$REPO_ROOT/home/custom_modes.yaml" "$HOME/.bob/custom_modes.yaml"
+cp "$REPO_ROOT/templates/user/custom_modes.yaml" "$HOME/.bob/custom_modes.yaml"
 echo "==> Installed ~/.bob/custom_modes.yaml (5 modes)"
 
-[[ -f "$HOME/.bob/audit.log" ]] || cp "$REPO_ROOT/home/audit.log" "$HOME/.bob/audit.log"
+[[ -f "$HOME/.bob/audit.log" ]] || cp "$REPO_ROOT/templates/user/audit.log" "$HOME/.bob/audit.log"
 
 # ---- Install project-level ----
 mkdir -p "$PROJECT_DIR/.bob"
