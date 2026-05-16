@@ -12,27 +12,39 @@ cd my-project
 export BOBSHELL_API_KEY=<your-key>
 export HF_TOKEN=<your-hf-token>          # for HF MCP, fine-tuning, traces
 
-bob                                       # code mode (AI eng + MLOps + eval + HF)
-bob --chat-mode plan "design a DPO pipeline for GLM-4.6"
-bob --chat-mode ask  "best open coding model under 32B as of today?"
-bob --chat-mode advanced "audit src/ for prompt injection vectors"
+bob                                       # code mode — general implementation
+bob --chat-mode plan          "design a DPO pipeline for GLM-4.6"
+
+# Specialist personas (project-level custom modes):
+bob --chat-mode ai-engineer       "build a multi-stage RAG over HF datasets"
+bob --chat-mode ml-researcher     "best open coding model under 32B as of today?"
+bob --chat-mode mlops-engineer    "containerize the vLLM server with autoscaling"
+bob --chat-mode eval-engineer     "build a paired-bootstrap eval comparing checkpoints"
+bob --chat-mode security-auditor  "audit src/ for prompt injection vectors"
 ```
 
-That's it. Bob discovers `AGENTS.md`, `.bob/rules/`, `.bob/rules-{mode}/`, `.bob/commands/`, and `.bob/settings.json` automatically.
+That's it. Bob discovers `AGENTS.md`, `.bob/rules/`, `.bob/rules-{slug}/`, `.bob/custom_modes.yaml`, `.bob/commands/`, and `.bob/settings.json` automatically.
 
 ## What you get
 
-### 9 always-on rules (`.bob/rules/`)
-TDD · systematic debugging · verification before completion · AI engineer workflow · experiment tracking · eval rigor · cost discipline · **open-models-first** · **agent self-improvement loop**
+### 11 always-on rules (`.bob/rules/`)
+TDD · systematic debugging · verification before completion · AI engineer workflow · experiment tracking · eval rigor · cost discipline · **open-models-first** · **agent self-improvement loop** · HF workflows · local serving
 
-### Mode-scoped expertise
+### Modes — 4 native + 5 custom
 
-| Mode | Persona loaded | Rules dir |
-|---|---|---|
-| `code` (default) | Senior AI engineer + MLOps + eval engineer + HF workflows + local serving | `.bob/rules-code/` |
-| `ask` | ML researcher + model selection protocol | `.bob/rules-ask/` |
-| `advanced` | ML security auditor (Semgrep, prompt injection, supply chain) | `.bob/rules-advanced/` |
-| `plan` | Planning checklist (bite-sized tasks, evidence-first) | `.bob/rules-plan/` |
+**Native** (built into Bob, immutable): `plan` · `code` (default) · `ask` · `advanced`
+
+**Custom** (defined in [`.bob/custom_modes.yaml`](./.bob/custom_modes.yaml), project-scoped):
+
+| Slug | Role | Edit access | Rules dir |
+|---|---|---|---|
+| 🧠 `ai-engineer` | Training, serving, MLOps, evals end-to-end | full | `.bob/rules-ai-engineer/` |
+| 🔬 `ml-researcher` | Lit review, model selection, arXiv | `*.md` only | `.bob/rules-ml-researcher/` |
+| ⚙️ `mlops-engineer` | Containers, IaC, CI/CD, observability | infra files only | `.bob/rules-mlops-engineer/` |
+| 📊 `eval-engineer` | Paired-bootstrap evals + report cards | evals/tests/notebooks | `.bob/rules-eval-engineer/` |
+| 🔒 `security-auditor` | ML supply-chain + prompt-injection audit | **read-only** | `.bob/rules-security-auditor/` |
+
+Edit permissions are enforced by Bob via `fileRegex` — the auditor cannot write code even if instructed to.
 
 ### 8 slash commands (`.bob/commands/`)
 **Engineering:** `/research` · `/baseline` · `/eval` · `/ship` · `/audit`
@@ -119,11 +131,14 @@ pip install mlx-lm                       # Apple Silicon
 ├── .bobrules                          # single-file fallback for minimal setups
 ├── .bob/
 │   ├── settings.json                  # 10 MCP servers (project scope)
-│   ├── rules/                         # 9 always-on rules
-│   ├── rules-code/                    # 6 code-mode rules (AI eng / MLOps / eval / HF / serve)
-│   ├── rules-ask/                     # 2 ask-mode rules (researcher / model selection)
-│   ├── rules-advanced/                # 1 advanced-mode rule (security auditor)
-│   ├── rules-plan/                    # 1 plan-mode rule (planning checklist)
+│   ├── rules/                         # 11 always-on rules
+│   ├── rules-ai-engineer/             # 🧠 Senior AI engineer (full edit)
+│   ├── rules-ml-researcher/           # 🔬 Researcher (md-only edit)
+│   ├── rules-mlops-engineer/          # ⚙️  MLOps (infra-only edit)
+│   ├── rules-eval-engineer/           # 📊 Evals (eval/test/notebook-only edit)
+│   ├── rules-security-auditor/        # 🔒 Auditor (read-only)
+│   ├── rules-code/                    # native code-mode rule (code standards)
+│   ├── rules-plan/                    # native plan-mode rule (planning checklist)
 │   ├── commands/                      # 8 slash commands
 │   └── context/                       # @-imported by AGENTS.md
 └── docs/

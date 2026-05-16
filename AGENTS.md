@@ -10,23 +10,44 @@
 
 A **project template** for AI/ML work using IBM Bob Shell. Clone it, `cd` in, run `bob`. Bob auto-loads:
 
-- `.bob/rules/` — always-on engineering discipline (TDD, debugging, verification, cost, eval rigor, **open-models-first**, **agent self-improvement**)
-- `.bob/rules-{plan,code,ask,advanced}/` — mode-scoped expertise (see below)
+- `.bob/rules/` — always-on engineering discipline (TDD, debugging, verification, cost, eval rigor, HF workflows, local serving, **open-models-first**, **agent self-improvement**)
+- `.bob/rules-{slug}/` — mode-scoped rules (auto-loaded when that mode is active)
+- `.bob/custom_modes.yaml` — **5 specialist personas** as project-level custom modes (see below)
 - `.bob/commands/` — slash commands (`/eval`, `/ship`, `/research`, `/baseline`, `/audit`, `/serve`, `/fine-tune`, `/trace`)
 - `.bob/settings.json` — MCP servers (HF Hub, Context7, arXiv, GitHub, Semgrep, E2B, …)
 
-## Working with Bob's modes
+## Working with modes
 
-Bob has 4 native chat modes — pick by intent:
+Bob ships **4 native modes** (plan / code / ask / advanced) — they cannot be modified, only used. This template adds **5 project-level custom modes** in `.bob/custom_modes.yaml`, each with its own role definition, tool permissions, and `fileRegex` edit restrictions.
 
-| Mode | Command | When to use | Loads on top of `rules/` |
+### Native modes (always available)
+
+| Mode | Command | When to use |
+|---|---|---|
+| **plan** | `bob --chat-mode plan` | Architecture, multi-file design before coding (loads `rules-plan/`) |
+| **code** | `bob` *(default)* | General implementation (loads `rules-code/`) |
+| **ask** | `bob --chat-mode ask` | Quick Q&A, doc lookup |
+| **advanced** | `bob --chat-mode advanced` | Cross-cutting refactors, complex reasoning |
+
+### Custom modes (this template's specialists)
+
+| Slug | Role | Edit access | Tools |
 |---|---|---|---|
-| **plan** | `bob --chat-mode plan` | Architecture, multi-file changes, design docs | `rules-plan/` planning checklist |
-| **code** | `bob --chat-mode code` | Implementation, training, MLOps, evals | `rules-code/` AI engineer + MLOps + eval + HF workflows + local serving |
-| **ask** | `bob --chat-mode ask` | Literature review, model selection, doc lookup | `rules-ask/` ML researcher + model selection protocol |
-| **advanced** | `bob --chat-mode advanced` | Security audit, deep refactor, cross-cutting review | `rules-advanced/` security auditor |
+| **ai-engineer** 🧠 | Senior AI/ML engineer — training, serving, MLOps, evals | full | read, edit, browser, command, mcp |
+| **ml-researcher** 🔬 | Literature review + model selection with arXiv citations | `*.md` only | read, browser, mcp |
+| **mlops-engineer** ⚙️ | Containers, IaC, CI/CD, observability | infra files only (Dockerfile, `*.tf`, `k8s/`, workflows…) | read, edit, command, mcp |
+| **eval-engineer** 📊 | Statistically rigorous evals + report cards | evals/tests/notebooks only | read, edit, command, mcp |
+| **security-auditor** 🔒 | ML supply-chain + prompt-injection audit | **none** (read-only) | read, browser, mcp |
 
-Default (no flag) = `code`.
+```bash
+bob --chat-mode ai-engineer       "design a DPO pipeline for $task"
+bob --chat-mode ml-researcher     "compare GLM-4.6 vs Qwen3-Coder for code-completion"
+bob --chat-mode mlops-engineer    "containerize the vLLM server with autoscaling"
+bob --chat-mode eval-engineer     "build a paired-bootstrap eval comparing checkpoints"
+bob --chat-mode security-auditor  "audit src/ before merge"
+```
+
+Each custom mode auto-loads `.bob/rules-{slug}/` on top of always-on `rules/`. Edit permissions are enforced by Bob via `fileRegex` — e.g. the auditor cannot write code even if asked.
 
 ## Slash commands
 
