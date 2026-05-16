@@ -1,37 +1,37 @@
-# ML Stack Defaults
+# Stack
 
-## Training
-- PyTorch 2.5+ (`torch.compile=True` where stable)
-- 🤗 Transformers + Accelerate
-- TRL for RLHF/DPO/GRPO
-- FSDP for >7B params; DDP for smaller
-- Ray Train for multi-node when Accelerate hits limits
+> Default to **open** at every layer. Closed APIs only when measured open alternative misses SLA.
 
-## Tracking
-- W&B project per experiment family
-- MLflow as fallback for air-gapped envs
-- HF Hub for public artifacts; internal registry for private
+## Models (rotate as leaderboards move)
 
-## Datasets
-- 🤗 datasets for tabular/text
-- WebDataset for >1TB streaming
-- Splits stored on HF Hub (private) or S3 with versioning
+- **Coding agent**: GLM-4.6, Qwen3-Coder, DeepSeek-V3
+- **General LLM**: Llama-3.3, Qwen3, Gemma-3
+- **Vision-language**: Qwen3-VL, Gemma-3-VL, Llama-3.2-Vision
+- **Embeddings**: BAAI/bge-m3, Qwen3-Embedding, jina-embeddings-v3
+- **Rerankers**: BAAI/bge-reranker-v2-m3, Qwen3-Reranker
+- **Speech**: Whisper-v3, Distil-Whisper, Parakeet
+- **Image gen**: Qwen-Image, FLUX.1-schnell, SDXL-Turbo
 
-## Evaluation
-- lm-eval-harness for standard LLM benchmarks
-- Custom + statistical sig tests for domain-specific
-- Paired bootstrap (n=1000)
+Always verify on HF Hub benchmark datasets for the deployed task before committing.
 
-## Serving
-- vLLM (default for LLMs)
-- TGI as alternative
-- llama.cpp for edge / CPU
-- TorchServe / Triton for non-LLM models
+## Frameworks
 
-## Quantization
-- GPTQ / AWQ for GPU inference
-- GGUF for CPU / edge
-- bitsandbytes 4/8-bit for QLoRA
+- **Training**: TRL (SFT/DPO/GRPO), Axolotl, accelerate, DeepSpeed
+- **Serving**: vLLM (Linux/GPU), llama.cpp (CPU/GGUF), MLX-LM (Apple Silicon)
+- **Evals**: lm-evaluation-harness, custom harnesses with paired bootstrap
+- **Experiment tracking**: Weights & Biases, MLflow
+- **Vector DB**: Qdrant, LanceDB, pgvector (only if needed — start without)
 
-## Structured output
-- Outlines or instructor (regex / Pydantic schemas)
+## Hosting
+
+- **Hub**: Hugging Face (models, datasets, Spaces, **traces**)
+- **Inference Providers**: HF routing → Together / Groq / Cerebras / Novita / Fireworks
+- **Compute jobs**: HF Jobs (one-off batch) for fine-tuning, OCR sweeps, eval matrices
+- **Buckets**: HF buckets (S3-compatible, mountable, cheaper) for trace storage
+
+## Stack philosophy
+
+- Reproducibility wins ties — pinned commit SHAs everywhere
+- Cost & latency are first-class metrics, tracked from day 1
+- Privacy by default — edge / browser deploy whenever possible
+- Every shipped model has a **model card** + **eval delta vs base**

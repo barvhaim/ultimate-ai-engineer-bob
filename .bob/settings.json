@@ -1,12 +1,22 @@
 {
   "$schema": "https://bobshell.io/schemas/settings.schema.json",
-  "_comment": "Project-scoped MCP servers for AI engineering. Bob auto-loads this on launch from <cwd>/.bob/settings.json. Servers needing API keys read them from env vars at runtime — see README.md for the list. To disable a server, remove its entry or restrict per-session with: bob --allowed-mcp-server-names context7 arxiv huggingface",
+  "_comment": "Project-scoped MCP servers for AI engineering. Bob auto-loads from <cwd>/.bob/settings.json. Servers needing API keys read them from env vars at runtime — see README.md. Restrict per-session: bob --allowed-mcp-server-names hf-mcp context7 arxiv",
   "mcpServers": {
+    "hf-mcp": {
+      "_comment": "Hugging Face Hub: search models/datasets/spaces, run jobs, query Spaces as tools",
+      "command": "npx",
+      "args": ["-y", "@huggingface/mcp-server"],
+      "env": {
+        "HF_TOKEN": "${HF_TOKEN}"
+      }
+    },
     "context7": {
+      "_comment": "Live library docs — prevents API hallucination",
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
     },
     "arxiv": {
+      "_comment": "Paper search + abstract retrieval",
       "command": "uvx",
       "args": ["arxiv-mcp-server"]
     },
@@ -39,14 +49,8 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
       }
     },
-    "huggingface": {
-      "command": "npx",
-      "args": ["-y", "@huggingface/mcp-server"],
-      "env": {
-        "HF_TOKEN": "${HF_TOKEN}"
-      }
-    },
     "e2b": {
+      "_comment": "Sandboxed code execution — run untrusted code without touching the host",
       "command": "npx",
       "args": ["-y", "@e2b/mcp-server"],
       "env": {
@@ -54,12 +58,9 @@
       }
     },
     "semgrep": {
+      "_comment": "Static security analysis — used by /audit and security-auditor mode",
       "command": "uvx",
       "args": ["semgrep-mcp"]
-    },
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
     }
   }
 }
