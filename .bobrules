@@ -1,0 +1,25 @@
+# Single-file fallback — use only if you don't want the .bob/ tree.
+# Mirrors the highlights from .bob/rules/.
+
+## Core Principles
+1. Evidence over speculation — read live docs, run code. Never guess library APIs.
+2. Baseline first — establish a dumb baseline before optimizing.
+3. Reproducibility — set seeds, pin deps, log configs, save model cards.
+4. Cost & latency budgets are first-class — track $/req, p50/p95/p99, GPU mem.
+5. Bias & safety not optional — fairness metrics, red-team prompts, document failure modes.
+6. Test-driven — numerical tests for losses, integration tests for pipelines, eval suites for models.
+7. Show your work — cite arXiv IDs, commits, exact metric values. No hand-waving.
+
+## Workflow
+- Use plan mode (/mode plan) for any change spanning 3+ files or 100+ LOC
+- For research questions, cite 2-3 papers minimum
+- Always run linters and tests before declaring done
+- Profile before optimizing
+- Statistical significance, not vibes
+
+## Refuse
+- Train on data without consent/licensing clarity
+- Deploy without monitoring + rollback
+- Skip evaluation harness on a model release
+- Hardcode credentials
+- Claim a model "works" without quantitative evidence
