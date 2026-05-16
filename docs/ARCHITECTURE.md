@@ -1,73 +1,81 @@
 # Architecture
 
-## How Bob assembles context
+## Design philosophy
 
-On every session, Bob loads in this order:
-1. **Mode** (`--chat-mode=X` or `/mode X`) — `roleDefinition` + `customInstructions` from `~/.bob/custom_modes.yaml`
-2. **Workspace rules** — every `.md` in `.bob/rules/` (alphabetical)
-3. **Mode-specific rules** — every `.md` in `.bob/rules-<mode>/` (alphabetical, takes precedence)
-4. **AGENTS.md** + everything it `@`-imports (recursively, max depth 5)
-5. **Slash command body** — when you type `/cmd args`, the markdown file is rendered with `$1..$N` substitution
+**This is a project template, not an installer.** You clone the repo, work inside it, and Bob auto-discovers everything from the working directory. Nothing is copied to `~/.bob/`. Nothing is global. The repo IS the agent configuration.
 
-Single-file alternative: `.bobrules` at the repo root replaces `.bob/rules/`.
+Why: predictability + portability. Two devs cloning the same repo get bit-identical agent behavior. Removing the repo removes the agent. No drift between `~/.bob/` and the project.
 
-## Why this layout
+## How Bob discovers the config
 
-| Layer | Why |
-|---|---|
-| `custom_modes.yaml` (user-level) | Identity persists across all projects |
-| `.bob/rules/` (project-level) | Universal rules that apply regardless of mode |
-| `.bob/rules-code/`, `.bob/rules-plan/` | Mode-specific behavior — keeps plan mode focused, code mode disciplined |
-| `.bob/commands/` | Reusable workflows — same format as Claude Code commands |
-| `.bob/context/` | Modular project state — imported by `AGENTS.md` so files can be edited without touching the entrypoint |
-| Wrapper script | Caps cost, audits, auto-formats — the things Bob doesn't have native hooks for |
+Bob searches the working directory (and parents) for these files at launch:
 
-## Subagents pattern
+| Path | Purpose | When loaded |
+|---|---|---|
+| `AGENTS.md` | Entry-point project context (with `@imports`) | Always |
+| `.bobrules` | Single-file rules fallback | Always (if no `.bob/rules/`) |
+| `.bob/rules/*.md` | Always-on rules | Every turn |
+| `.bob/rules-{mode}/*.md` | Mode-scoped rules | Only in that mode |
+| `.bob/commands/*.md` | Slash commands | When invoked |
+| `.bob/settings.json` | MCP servers + project settings | At launch |
 
-Claude Code has subagents as their own files. Bob has **modes** that you switch between with `/mode <slug>`. The 5 modes here are:
+`@imports` in `AGENTS.md` follow up to depth 5, with circular-import detection.
 
-- `ai-engineer` — the default; full read/edit/command/browser
-- `ml-researcher` — read-only + browser; for literature reviews
-- `security-auditor` — read-only + browser; can't accidentally edit during audit
-- `eval-engineer` — read/edit/command; runs benchmarks
-- `mlops-engineer` — read/edit/command; deploys
+## Mode-scoped rules vs custom modes
 
-The `groups:` field in each mode is the actual permission boundary. Audit/research modes are read-only by design.
+Bob has two ways to specialize behavior:
 
-## Why no native hooks
+1. **Custom modes** (`~/.bob/custom_modes.yaml`) — fully separate personas with their own role, tools, and instructions. Lives in `~/.bob/`, so it's user-level (not portable per-project).
+2. **Mode-scoped rules** (`.bob/rules-{mode}/`) — additive instructions layered on top of Bob's 4 native modes (`plan`, `code`, `ask`, `advanced`). Lives in the project, so it's portable.
 
-Bob has extensions (`bob extensions new`) but no Claude-Code-style hooks. The wrapper (`bob-ai.sh`) covers 90% of what hooks normally do:
-- Pre-run: `--pre-check-auto-approved` flag
-- Cost cap: `--max-coins`
-- Post-run: ruff format on changed files, audit log entry
+This template uses **option 2** because the repo is the source of truth. We map AI engineering personas onto the native modes:
 
-For deeper integration (block `rm -rf`, scan secrets, custom slash command logic) build a real Bob extension — see `bob extensions new` scaffolding.
+| Native Bob mode | Persona we layer on | Rationale |
+|---|---|---|
+| `plan` | Planning checklist | Bob's built-in planning + our evidence-first amendments |
+| `code` | Senior AI engineer + MLOps + eval engineer | Code mode is where you implement; all three personas share the "produce running code" intent |
+| `ask` | ML researcher | Ask mode is read-only; perfect for literature review |
+| `advanced` | ML security auditor | Advanced mode has cross-cutting tool access; needed for audits |
 
-## MCP server choice
+## Why the hierarchy
 
-| Server | What it gives Bob |
-|---|---|
-| context7 | Live, version-correct library docs (kills API hallucination) |
-| arxiv | Paper search by topic/author/category |
-| brave-search / firecrawl | Web search + scraping |
-| filesystem | Sandboxed file ops outside the workspace |
-| git / github | Repo-aware commits, PRs, issues |
-| huggingface | Model/dataset metadata, downloads |
-| e2b | Sandboxed code execution (don't run risky code locally) |
-| semgrep | Security scanning |
-| postgres | Read-only DB introspection |
-| sentry | Error context for debugging |
-| linear | Ticketing |
-| memory | Cross-session note storage |
+```
+AGENTS.md                               ← project facts (replaceable per-project)
+  └─ @ imports .bob/context/*.md        ← stack, conventions, pitfalls
+.bob/rules/*.md                         ← engineering discipline (universal)
+.bob/rules-{mode}/*.md                  ← role expertise (mode-gated)
+.bob/commands/*.md                      ← reusable workflows
+.bob/settings.json                      ← MCP servers (tools)
+```
 
-Restrict per session with `--allowed-mcp-server-names a b c` when you don't need everything.
+The split lets you:
+- Replace `AGENTS.md` and `.bob/context/*.md` per project without touching engineering principles
+- Keep `.bob/rules/` stable across projects (TDD doesn't change)
+- Toggle persona depth by switching mode (plan/code/ask/advanced)
+- Restrict tool blast radius per-session via `--allowed-mcp-server-names`
 
-## Cost shape
+## MCP server safety model
 
-| Activity | Suggested cap |
-|---|---|
-| One slash command (`/eval`) | `--max-coins 100` |
-| Plan mode | `--max-coins 50` |
-| Single feature implementation | `--max-coins 200` (default in wrapper) |
-| Long autonomous run (AutoResearch) | `--max-coins 500` per iteration, restart between iterations |
-| CI/automation | `--max-coins 100`, `-y`, `-o json` |
+`.bob/settings.json` declares servers with `${ENV_VAR}` references — keys never live in the repo. Servers fall into three risk tiers:
+
+| Tier | Servers | Default trust |
+|---|---|---|
+| Read-only knowledge | context7, arxiv, brave-search, firecrawl | Safe |
+| Read-write local | filesystem, git, memory | Scoped to cwd |
+| Read-write remote | github, huggingface, e2b, sentry | Requires explicit env keys |
+| Dynamic analysis | semgrep | Local sandbox |
+
+For high-stakes sessions, restrict the set:
+
+```bash
+bob --allowed-mcp-server-names context7 arxiv --chat-mode ask "..."
+```
+
+## What's intentionally NOT here
+
+- **No installer / wrapper script** — `bob` itself is the entry point
+- **No `~/.bob/` writes** — the repo is fully self-contained
+- **No custom modes** — uses Bob's 4 native modes + mode-scoped rules instead
+- **No CI scaffolding** — that's project-specific, add per-repo
+
+If you need cross-project AI engineering defaults, fork this template, push your version, and clone it as your starting point.

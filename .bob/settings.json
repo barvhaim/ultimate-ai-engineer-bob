@@ -1,0 +1,65 @@
+{
+  "$schema": "https://bobshell.io/schemas/settings.schema.json",
+  "_comment": "Project-scoped MCP servers for AI engineering. Bob auto-loads this on launch from <cwd>/.bob/settings.json. Servers needing API keys read them from env vars at runtime — see README.md for the list. To disable a server, remove its entry or restrict per-session with: bob --allowed-mcp-server-names context7 arxiv huggingface",
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "arxiv": {
+      "command": "uvx",
+      "args": ["arxiv-mcp-server"]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      }
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "."]
+    },
+    "git": {
+      "command": "uvx",
+      "args": ["mcp-server-git"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "huggingface": {
+      "command": "npx",
+      "args": ["-y", "@huggingface/mcp-server"],
+      "env": {
+        "HF_TOKEN": "${HF_TOKEN}"
+      }
+    },
+    "e2b": {
+      "command": "npx",
+      "args": ["-y", "@e2b/mcp-server"],
+      "env": {
+        "E2B_API_KEY": "${E2B_API_KEY}"
+      }
+    },
+    "semgrep": {
+      "command": "uvx",
+      "args": ["semgrep-mcp"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    }
+  }
+}
