@@ -7,13 +7,10 @@ A **project template** that turns IBM Bob Shell into a senior AI/ML engineer wit
 ## Quick start
 
 ```bash
-git clone https://github.com/njs2017/ultimate-ai-engineer-bob my-project
+git clone https://github.com/barvhaim/ultimate-ai-engineer-bob my-project
 cd my-project
 export BOBSHELL_API_KEY=<your-key>
 export HF_TOKEN=<your-hf-token>          # for HF MCP, fine-tuning, traces
-
-bob                                       # code mode — general implementation
-bob --chat-mode plan          "design a DPO pipeline for GLM-4.6"
 
 # Specialist personas (project-level custom modes):
 bob --chat-mode ai-engineer       "build a multi-stage RAG over HF datasets"
