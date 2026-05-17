@@ -1,4 +1,4 @@
-# 🧠 Ultimate AI Engineer — Bob Shell Project Template
+# 🧠 Ultimate AI Engineer - Bob Shell Project Template
 
 A **project template** that turns IBM Bob Shell into a senior AI/ML engineer with the **open-source AI engineering ecosystem** baked in. No installer, no copy steps — clone, `cd`, run `bob`.
 
